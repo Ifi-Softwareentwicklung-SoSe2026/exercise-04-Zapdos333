@@ -423,9 +423,46 @@ Hier bitte den Code aus `robots_exercise` in ein UML Diagramm überführen.
 
 ```text @plantUML
 @startuml
-
-Arbeiten Sie hier !!!
-
+package RoboterDatenverwaltung {
+ interface ISerializer {
+  + SpeichernAlsJSON(string): void
+  + {static} {abstract} LadenAusJSON(string): Roboter
+  + SpeichernAlsCSV(string): void
+  + {static} {abstract} LadenAusCSV(string): Roboter
+ }
+ class Roboter {
+  + Name: string
+  + Typ: string
+  + EnergieLevel: int
+  + Roboter(): Roboter
+  + Roboter(string, string, int): Roboter
+  + SpeichernAlsJSON(string): void
+  + {static} LadenAusJSON(string): Roboter
+  + SpeichernAlsCSV(string): void
+  + {static} LadenAusCSV(string): Roboter
+  + virtual GetStatus(): string
+  + virtual Activate(): void
+ }
+ class Lieferroboter {
+  + GetStatus(): string
+ }
+}
+class Program {
+ - ROBOT_DATA_FOLDER: string
+ - ROBOT_COUNT: int
+ - {static} RandomGenerator: Random
+ - {static} StandardTypen: string[]
+ ~ {static} main(string[]): void
+ - {static} InitialisiereZufaelligeRoboter(int): List<Roboter>
+ - {static} ErzeugeZufaelligenRoboter(int): Roboter
+ - {static} GibStatusAus(IEnumerable<Roboter>): void
+ - {static} SpeichereAlleRoboter(IEnumerable<Roboter>, string): void
+ - {static} RemoveExistingRobots(string): void
+ - {static} LadeAlleCsvRoboter(string): List<Roboter>
+ - {static} LadeAlleJsonRoboter(string): List<Roboter>
+}
+Lieferroboter --|> Roboter
+Roboter ..|> ISerializer
 @enduml
 ```
 @plantUML.eval(png)
