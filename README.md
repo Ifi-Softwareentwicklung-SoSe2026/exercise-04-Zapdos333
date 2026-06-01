@@ -444,6 +444,9 @@ package RoboterDatenverwaltung {
   + virtual Activate(): void
  }
  class Lieferroboter {
+  + Lieferkapazität: int
+  + Lieferroboter(): Lieferroboter
+  + Lieferroboter(name, int, int)
   + GetStatus(): string
  }
 }
