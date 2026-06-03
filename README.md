@@ -475,13 +475,67 @@ Roboter ..|> ISerializer
 
 Hier soll das überarbeitete UML Diagramm zum Code in `robots_exercise` erstellt werden.
 
+Die Serialisierung ist zum einen starr auf `JSON` und `CSV` hart kodiert.
+Zum anderen werden praktisch die selben Daten abgelegt.
+`CSV` kann eindeutig auch in `JSON` dargestellt werden.
+
+Außerdem ist der Name `ISerializer` irreführend.
+Die implementierende Klasse serialisiert zwar selbst,
+stellt aber selber in erster Linie die zu-serialisierende Datenstruktur dar.
+Daher die Umbenennung zu `ISerializable`. 
+
+Das `ISerializable` Interface verwendet Serialisierung zu `Dictionary<string, string>` als Verallgemeinerung von CSV.
+Das neue Interface enthält auch statische Methoden zu Umwandlung in die vorherigen CSV und JSON Formate
+ausgehend von dem Verallgemeinerten `Dictionary`.
+
 
 ```text @plantUML
 @startuml
-
-Arbeiten Sie hier !!!
-
+package RoboterDatenverwaltung {
+  interface ISerializable {
+    + zuDictionary(): Dictionary<string, string>
+    + {static} {abstract} vonDictionary(Dictionary<string, string>): ISerializer
+    + {static} zuJson(Dictionary<string, string>): string
+    + {static} vonJson(string): Dictionary<string, string>
+    + {static} zuCsv(Dictionary<string, string>): string
+    + {static} vonCsv(string): Dictionary<string, string>
+  }
+  class Roboter {
+    + Name: string
+    + Typ: string
+    + EnergieLevel: int
+    + Roboter(): Roboter
+    + Roboter(string, string, int): Roboter
+    + zuDictionary(): Dictionary<string, string>
+    + {static} {abstract} vonDictionary(Dictionary<string, string>): Roboter
+    + virtual GetStatus(): string
+    + virtual Activate(): void
+  }
+  class Lieferroboter {
+    + Lieferkapazität: int
+    + Lieferroboter(): Lieferroboter
+    + Lieferroboter(name, int, int)
+    + zuDictionary(): Dictionary<string, string>
+    + {static} {abstract} vonDictionary(Dictionary<string, string>): Lieferroboter
+    + GetStatus(): string
+  }
+}
+class Program {
+  - ROBOT_DATA_FOLDER: string
+  - ROBOT_COUNT: int
+  - {static} RandomGenerator: Random
+  - {static} StandardTypen: string[]
+  - {static} main(string[]): void
+  - {static} InitialisiereZufaelligeRoboter(int): List<Roboter>
+  - {static} ErzeugeZufaelligenRoboter(int): Roboter
+  - {static} GibStatusAus(IEnumerable<Roboter>): void
+  - {static} SpeichereAlleRoboter(IEnumerable<Roboter>, string): void
+  - {static} RemoveExistingRobots(string): void
+  - {static} LadeAlleCsvRoboter(string): List<Roboter>
+  - {static} LadeAlleJsonRoboter(string): List<Roboter>
+}
+Lieferroboter --|> Roboter
+Roboter ..|> ISerializable
 @enduml
 ```
-@plantUML.eval(png)
 
