@@ -475,6 +475,11 @@ Roboter ..|> ISerializer
 
 Hier soll das überarbeitete UML Diagramm zum Code in `robots_exercise` erstellt werden.
 
+Das `ISerializer` Interface wurde durch das `ISerializable` Interface ersetzt.
+`ISerializable` verwendet Serialisierung zu `Dictionary<string, string>` als Verallgemeinerung von CSV.
+Das neue Interface enthält auch statische Methoden zu Umwanldung in die vorherigen CSV und JSON Formate
+ausgehend von dem Verallgemeinerten `Dictionary`.
+
 
 ```text @plantUML
 @startuml
