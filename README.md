@@ -483,5 +483,4 @@ Arbeiten Sie hier !!!
 
 @enduml
 ```
-@plantUML.eval(png)
 
