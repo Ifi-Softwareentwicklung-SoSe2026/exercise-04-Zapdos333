@@ -85,8 +85,8 @@ class Program
             string csvPfad = Path.Combine(ordner, $"{basisname}.csv");
             string jsonPfad = Path.Combine(ordner, $"{basisname}.json");
 
-            einzelnerRoboter.SpeichernAlsCSV(csvPfad);
-            einzelnerRoboter.SpeichernAlsJSON(jsonPfad);
+            File.WriteAllText(csvPfad, ISerializable.zuCsv(einzelnerRoboter.zuDictionary()));
+            File.WriteAllText(jsonPfad, ISerializable.zuJson(einzelnerRoboter.zuDictionary()));
             index++;
         }
     }
@@ -109,7 +109,10 @@ class Program
         return Directory
             .GetFiles(ordner, "*.csv")
             .OrderBy(datei => datei)
-            .Select(Roboter.LadenAusCSV)
+            .Select(datei => {
+                string csvInhalt = File.ReadAllText(datei);
+                return (Roboter)Roboter.vonDictionary(ISerializable.vonCsv(csvInhalt));
+            })
             .ToList();
     }
 
@@ -118,7 +121,10 @@ class Program
         return Directory
             .GetFiles(ordner, "*.json")
             .OrderBy(datei => datei)
-            .Select(Roboter.LadenAusJSON)
+            .Select(datei => {
+                string jsonInhalt = File.ReadAllText(datei);
+                return (Roboter)Roboter.vonDictionary(ISerializable.vonJson(jsonInhalt));
+            })
             .ToList();
     }
 }
