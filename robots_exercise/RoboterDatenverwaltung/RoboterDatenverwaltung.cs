@@ -1,12 +1,6 @@
 ﻿namespace RoboterDatenverwaltung;
 
-using System.Text.Json;
-using System.Text.Json.Serialization;
-
-[JsonPolymorphic(TypeDiscriminatorPropertyName = "$type")]
-[JsonDerivedType(typeof(Roboter), "roboter")]
-[JsonDerivedType(typeof(Lieferroboter), "lieferroboter")]
-public class Roboter : ISerializer
+public class Roboter : ISerializable
 {
     public Roboter(string name, string typ, int energielevel)
     {
@@ -25,46 +19,51 @@ public class Roboter : ISerializer
 
     public void SpeichernAlsCSV(string dateipfad)
     {
-        string inhalt = this is Lieferroboter lieferroboter
-            ? $"{Name},{Typ},{Energielevel},{lieferroboter.Lieferkapazität}"
-            : $"{Name},{Typ},{Energielevel}";
+        string inhalt = ISerializable.zuCsv(zuDictionary());
         File.WriteAllText(dateipfad, inhalt);
     }
 
     public static Roboter LadenAusCSV(string dateipfad)
     {
-        string[] zeilen = File.ReadAllLines(dateipfad);
-        string[] werte = zeilen[0].Split(',');
-
-        string name = werte[0];
-        string typ = werte[1];
-        int energielevel = int.Parse(werte[2]);
-
-        if (typ == "Lieferroboter" && werte.Length > 3)
-        {
-            int lieferkapazitaet = int.Parse(werte[3]);
-            return new Lieferroboter(name, energielevel, lieferkapazitaet);
-        }
-
-        return new Roboter
-        {
-            Name = name,
-            Typ = typ,
-            Energielevel = energielevel
-        };
+        string zeilen = File.ReadAllText(dateipfad);
+        return (Roboter)vonDictionary(ISerializable.vonCsv(zeilen));
     }
 
     public void SpeichernAlsJSON(string dateipfad)
     {
-        var json = JsonSerializer.Serialize(this, new JsonSerializerOptions { WriteIndented = true });
+        var json = ISerializable.zuJson(zuDictionary());
         File.WriteAllText(dateipfad, json);
     }
 
     public static Roboter LadenAusJSON(string dateipfad)
     {
         string json = File.ReadAllText(dateipfad);
-        Roboter? roboter = JsonSerializer.Deserialize<Roboter>(json) ?? throw new InvalidDataException($"JSON-Datei konnte nicht gelesen werden: {dateipfad}");
-        return roboter;
+        return (Roboter)vonDictionary(ISerializable.vonJson(json));
+    }
+
+    public Dictionary<string, string> zuDictionary()
+    {
+        if (this is Lieferroboter lieferroboter)
+            return lieferroboter.zuDictionary();
+        return new Dictionary<string, string>
+        {
+            { "Name", Name },
+            { "Typ", Typ },
+            { "Energielevel", Energielevel.ToString() }
+        };
+    }
+    public static ISerializable vonDictionary(Dictionary<string, string> dict)
+    {
+        string typ = dict.GetValueOrDefault("Typ", "Unbekannt");
+        if (typ == "Lieferroboter")
+            return Lieferroboter.vonDictionary(dict);
+        string name = dict.GetValueOrDefault("Name", "Unbekannt");
+        int energieLevel = int.TryParse(dict.GetValueOrDefault("Energielevel", "0"), out int el) ? el : 0;
+        return new Roboter(
+            name,
+            typ,
+            energieLevel
+        );
     }
 
     public virtual string GetStatus()
@@ -95,6 +94,29 @@ public class Lieferroboter : Roboter
     public Lieferroboter(string name, int energielevel, int lieferkapazität) : base(name, "Lieferroboter", energielevel)
     {
         Lieferkapazität = lieferkapazität;
+    }
+
+    public new Dictionary<string, string> zuDictionary()
+    {
+        var result = new Dictionary<string, string>
+        {
+            { "Name", Name },
+            { "Typ", Typ },
+            { "Energielevel", Energielevel.ToString() }
+        };
+        if (this is Lieferroboter lieferroboter)
+            result["Lieferkapazität"] = lieferroboter.Lieferkapazität.ToString();    
+        return result;
+    }
+    public static new ISerializable vonDictionary(Dictionary<string, string> dict)
+    {
+        string typ = dict.GetValueOrDefault("Typ", "Unbekannt");
+        if (typ != "Lieferroboter")
+            throw new ArgumentException("Der übergebene Dictionary entspricht nicht einem Lieferroboter.");
+        string name = dict.GetValueOrDefault("Name", "Unbekannt");
+        int energieLevel = int.TryParse(dict.GetValueOrDefault("Energielevel", "0"), out int el) ? el : 0;
+        int lieferkapazität = int.TryParse(dict.GetValueOrDefault("Lieferkapazität", "0"), out int lk) ? lk : 0;
+        return new Lieferroboter(name, energieLevel, lieferkapazität);
     }
 
     public override string GetStatus()
