@@ -17,29 +17,6 @@ public class Roboter : ISerializable
     public string Typ { get; set; } // z. B. "Lieferroboter", "Schwimmroboter", etc.
     public int Energielevel { get; set; }
 
-    public void SpeichernAlsCSV(string dateipfad)
-    {
-        string inhalt = ISerializable.zuCsv(zuDictionary());
-        File.WriteAllText(dateipfad, inhalt);
-    }
-
-    public static Roboter LadenAusCSV(string dateipfad)
-    {
-        string zeilen = File.ReadAllText(dateipfad);
-        return (Roboter)vonDictionary(ISerializable.vonCsv(zeilen));
-    }
-
-    public void SpeichernAlsJSON(string dateipfad)
-    {
-        var json = ISerializable.zuJson(zuDictionary());
-        File.WriteAllText(dateipfad, json);
-    }
-
-    public static Roboter LadenAusJSON(string dateipfad)
-    {
-        string json = File.ReadAllText(dateipfad);
-        return (Roboter)vonDictionary(ISerializable.vonJson(json));
-    }
 
     public Dictionary<string, string> zuDictionary()
     {
